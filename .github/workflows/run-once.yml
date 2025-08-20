@@ -12,25 +12,44 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # we need history to rebase
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install deps
+      - name: Install deps (Playwright + system libs)
         run: |
           python -m pip install --upgrade pip
           pip install -r scraper/requirements.txt
           python -m playwright install --with-deps chromium
 
-      - name: Run scraper (create docs/fide_events.ics)
-        run: python scraper/scrape_fide_calendar.py
+      - name: Run scraper (creates docs/fide_events.ics)
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: 0
+        run: |
+          python scraper/scrape_fide_calendar.py
+          test -s docs/fide_events.ics || (echo "ICS not created" && exit 1)
 
+      # ---- conflict-safe commit: fetch, rebase, then push ----
       - name: Commit ICS
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git checkout main
           git add docs/fide_events.ics
-          git commit -m "Add/Update ICS" || echo "No changes"
-          git push
+          git commit -m "Update ICS" || echo "No changes"
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+      # Optional: artifact for quick download/debug, even if Pages not set
+      - name: Upload ICS artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fide_events
+          path: docs/fide_events.ics
+          if-no-files-found: error
