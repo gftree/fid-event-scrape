@@ -13,7 +13,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # we need history to rebase
+          fetch-depth: 0  # .we need history to rebase
 
       - name: Set up Python
         uses: actions/setup-python@v5
