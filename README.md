@@ -14,7 +14,7 @@ This repo builds a single ICS file from specific FIDE event pages.
 2. Open **Actions → Build ICS (manual)** and **Run workflow**.
 3. After it completes, your file is here:
 
-4. https://.github.io/fid-calendar-scrape/fide_events.ics
+4. https://gftree.github.io/fid-calendar-scrape/fide_events.ics
 
 5. ## Edit URLs
 Update the `URLS` list in `scraper/scrape_fide_calendar.py`.
